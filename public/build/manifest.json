@@ -1,0 +1,27 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-707fa0b2.css",
+    "isEntry": true,
+    "src": "resources/css/app.css"
+  },
+  "resources/css/background.css": {
+    "file": "assets/background-d276da7f.css",
+    "isEntry": true,
+    "src": "resources/css/background.css"
+  },
+  "resources/css/spinner.css": {
+    "file": "assets/spinner-e5488522.css",
+    "isEntry": true,
+    "src": "resources/css/spinner.css"
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-9a25e63b.js",
+    "isEntry": true,
+    "src": "resources/js/app.js"
+  },
+  "resources/js/loading.js": {
+    "file": "assets/loading-4bc52276.js",
+    "isEntry": true,
+    "src": "resources/js/loading.js"
+  }
+}
