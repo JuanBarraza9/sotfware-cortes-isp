@@ -37,13 +37,15 @@ class ApiController extends Controller
         $userDebts = array(); // Array donde se guardarán los usuarios con deuda mayor a cero
 
         foreach ($responseBody as $res) {
-            if ($res['duedebt'] == 0) {
+            if ($res['duedebt'] <= 0) {
                 // Si el usuario tiene deuda igual a cero, se agrega al arreglo $userDebts
                 $userDebts[] = $res['code'];
             }
         }
 
         $arrayEnteros = array_map('intval', $userDebts);
+
+        $gruposDeUsuarios = array_chunk($arrayEnteros, 500);
 
         //* Conexion a la api de Sopnet
 
@@ -73,13 +75,17 @@ class ApiController extends Controller
         // Crear instancia de SoapClient
         $class = adminbcmServerSoapClient::$_Server=new SoapClient(adminbcmServerSoapClient::$_WsdlUri,$soapOptions);
     
-        // Llamar método en servidor SOAP
-        // true = cortar
-        // false = activar
-        foreach ($arrayEnteros as $id) {
-            $active = $class->clienteActualizarBloqueo($id, false);
-        }
+        foreach ($gruposDeUsuarios as $grupo) {
 
+            // Llamar método en servidor SOAP para cada usuario en $grupo
+            // true = cortar
+            // false = activar
+            foreach ($grupo as $id) {
+                $bloqueo = $class->clienteActualizarBloqueo($id, false);
+                sleep(1); // Agregar una pausa de 1 segundo entre cada consulta
+            }
+
+        }
         $notification = array(
             'message' => 'Activación realizada Correctamente!',
             'alert-type' => 'success'
@@ -87,8 +93,7 @@ class ApiController extends Controller
 
         return redirect()->back()->with($notification);
     } //* end method
-    
-    //* cortes
+
 
     public function generarCortes() {
 
@@ -125,6 +130,8 @@ class ApiController extends Controller
 
         $arrayEnteros = array_map('intval', $userDebts);
 
+        $gruposDeUsuarios = array_chunk($arrayEnteros, 500);
+
         //* Conexion a la api de Sopnet
 
         $user = env('API_SOPNET_USER'); // Usuario
@@ -153,12 +160,17 @@ class ApiController extends Controller
         // Crear instancia de SoapClient
         $class = adminbcmServerSoapClient::$_Server=new SoapClient(adminbcmServerSoapClient::$_WsdlUri,$soapOptions);
     
-        // Llamar método en servidor SOAP
-        // true = cortar
-        // false = activar
-        foreach ($arrayEnteros as $id) {
-            $active = $class->clienteActualizarBloqueo($id, true);
+        foreach ($gruposDeUsuarios as $grupo) {
+            // Llamar método en servidor SOAP para cada usuario en $grupo
+            // true = cortar
+            // false = activar
+            foreach ($grupo as $id) {
+                $bloqueo = $class->clienteActualizarBloqueo($id, true);
+                sleep(1); // Agrega una pausa de 1 segundo entre cada consulta
+            }
+
         }
+
 
         $notification = array(
             'message' => 'Cortes realizados Correctamente!',

@@ -27,21 +27,25 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="card p-4">
-                        <p>Este método puede durar hasta 10 minutos, por favor aguarde con paciencia mientras el sistema se encarga de realizar las activaciones.</p>
+                        <p>Este método puede durar hasta 2 horas dependiendo la cantidad de clientes, por favor aguarde con paciencia mientras el sistema se encarga de realizar las activaciones y termine.</p>
                     
                     </div>
 
                     <div class="col">
-                        <form id="submitCortes" method="POST" action="{{route('generar-active-post')}}">
+                        
+                        <form id="submitCortes" method="POST" action="{{route('generar-active-post')}}" name="formulario1">
                             @csrf
 
                             <input type="submit" value="Generar Activación" class="btn btn-success px-5 radius-30"></input>
                         </form>
+
                         
                         <div class="p-4" id="spinner-result">
 
                         </div>
+
                     </div>
+
                 </div>
             </div>
         </div>

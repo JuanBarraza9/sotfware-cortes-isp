@@ -48,8 +48,10 @@ Route::middleware(['auth', 'role:admin'])->group(function(){
     Route::post('/admin/register/store', [AdminController::class, 'adminRegisterStore'])->name('admin.register.store');
 
     // admin api
+    // active
     Route::get('/admin/generar-activacion', [ApiController::class, 'generarActive'])->name('generar-active');
     Route::post('/admin/generar-activacion/post', [ApiController::class, 'generarActivePost'])->name('generar-active-post');
+    // court
     Route::get('/admin/generar-cortes', [ApiController::class, 'generarCortes'])->name('generar-cortes');
     Route::post('/admin/generar-cortes/post', [ApiController::class, 'generarCortesPost'])->name('generar-cortes-post');
 });

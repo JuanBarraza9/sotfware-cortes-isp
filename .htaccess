@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteCond %{REQUEST_URI} !/public
+RewriteRule ^(.*)$ public/$1
+</IfModule>
+RewriteEngine On
+RewriteRule .* - [E=noabort:1]
+RewriteRule .* - [E=noconntimeout:1]
+php_value max_input_time 100000
+php_value max_execution_time 100000
