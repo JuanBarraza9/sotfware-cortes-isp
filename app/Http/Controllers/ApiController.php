@@ -5,6 +5,8 @@ use SoapClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use App\Http\Controllers\adminbcmServerSoapClient;
+use Illuminate\Support\Facades\Cache;
+
 
 
 class ApiController extends Controller
@@ -33,6 +35,8 @@ class ApiController extends Controller
         $response = $client->sendAsync($request)->wait();
         // Puedes trabajar con los datos de respuesta en $responseData
         $responseBody = json_decode($response->getBody(), true);
+
+        $activatedUsers = Cache::get('activated_users', []);
         
         $userDebts = array(); // Array donde se guardarán los usuarios con deuda mayor a cero
 
@@ -42,12 +46,13 @@ class ApiController extends Controller
                 $userDebts[] = $res['code'];
             }
         }
+        
 
         $arrayEnteros = array_map('intval', $userDebts);
 
         $gruposDeUsuarios = array_chunk($arrayEnteros, 500);
 
-        //* Conexion a la api de Sopnet
+        // //* Conexion a la api de Sopnet
 
         $user = env('API_SOPNET_USER'); // Usuario
         $pass = env('API_SOPNET_PASSWORD'); // Contraseña
@@ -75,23 +80,34 @@ class ApiController extends Controller
         // Crear instancia de SoapClient
         $class = adminbcmServerSoapClient::$_Server=new SoapClient(adminbcmServerSoapClient::$_WsdlUri,$soapOptions);
     
+        // Recorre los grupos de usuarios
         foreach ($gruposDeUsuarios as $grupo) {
-
             // Llamar método en servidor SOAP para cada usuario en $grupo
             // true = cortar
             // false = activar
             foreach ($grupo as $id) {
-                $bloqueo = $class->clienteActualizarBloqueo($id, false);
-                sleep(1); // Agregar una pausa de 1 segundo entre cada consulta
+                // Verifica si el usuario ya está activado (en caché)
+                if (!in_array($id, $activatedUsers)) {
+                    $bloqueo = $class->clienteActualizarBloqueo($id, false);
+                    sleep(1); // Agregar una pausa de 1 segundo entre cada consulta
+                    
+                    // Agrega el usuario activado al array de usuarios activados
+                    $activatedUsers[] = $id;
+                    
+                    // Actualiza la caché con el nuevo array de usuarios activados
+                    Cache::put('activated_users', $activatedUsers, now()->addHours(168));
+                }
             }
-
         }
+
+        
         $notification = array(
             'message' => 'Activación realizada Correctamente!',
             'alert-type' => 'success'
         );
 
         return redirect()->back()->with($notification);
+
     } //* end method
 
 
