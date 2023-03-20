@@ -135,6 +135,8 @@ class ApiController extends Controller
         // Puedes trabajar con los datos de respuesta en $responseData
         $responseBody = json_decode($response->getBody(), true);
         
+        $courtUsers = Cache::get('court_users', []);
+
         $userDebts = array(); // Array donde se guardarán los usuarios con deuda mayor a cero
 
         foreach ($responseBody as $res) {
@@ -176,15 +178,24 @@ class ApiController extends Controller
         // Crear instancia de SoapClient
         $class = adminbcmServerSoapClient::$_Server=new SoapClient(adminbcmServerSoapClient::$_WsdlUri,$soapOptions);
     
+        // Recorre los grupos de usuarios
         foreach ($gruposDeUsuarios as $grupo) {
             // Llamar método en servidor SOAP para cada usuario en $grupo
             // true = cortar
             // false = activar
             foreach ($grupo as $id) {
-                $bloqueo = $class->clienteActualizarBloqueo($id, true);
-                sleep(1); // Agrega una pausa de 1 segundo entre cada consulta
+                // Verifica si el usuario ya está activado (en caché)
+                if (!in_array($id, $courtUsers)) {
+                    $bloqueo = $class->clienteActualizarBloqueo($id, true);
+                    sleep(1); // Agregar una pausa de 1 segundo entre cada consulta
+                    
+                    // Agrega el usuario activado al array de usuarios activados
+                    $courtUsers[] = $id;
+                    
+                    // Actualiza la caché con el nuevo array de usuarios activados
+                    Cache::put('court_users', $courtUsers, now()->addHours(168));
+                }
             }
-
         }
 
 
